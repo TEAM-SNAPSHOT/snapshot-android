@@ -59,4 +59,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.activity.compose)
     implementation(libs.accompanist.systemuicontroller)
+
+    // 이미지 로딩 라이브러리
+    implementation(libs.coil.compose)
+
 }
