@@ -24,8 +24,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.snapshot.feature.component.topbar.TopBar
 import com.snapshot.feature.screen.home.navigation.homeScreen
 import com.snapshot.feature.screen.home.navigation.navigateToHome
+import com.snapshot.feature.screen.profile.ProfileScreen
+import com.snapshot.feature.screen.profile.navigation.profileScreen
 import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 import com.snapshot.feature.screen.splash.navigation.splashScreen
 
@@ -36,6 +39,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             modifier = Modifier.systemBarsPadding(),
+            topBar = { TopBar() },
             bottomBar = {
 
             }
@@ -53,6 +57,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                     navigateToHome = navHostController::navigateToHome
                 ) // -> 모든 화면은 여기에서 호출되어야 합니다. 안그러면 에러 터집니다.
                 homeScreen()
+                profileScreen()
             }
         }
     }
