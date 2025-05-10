@@ -41,7 +41,6 @@ fun App(navHostController: NavHostController = rememberNavController()) {
             modifier = Modifier.systemBarsPadding(),
             topBar = { TopBar() },
             bottomBar = {
-
             }
         ) { innerPadding ->
             NavHost(

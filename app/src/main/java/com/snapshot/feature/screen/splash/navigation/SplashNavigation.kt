@@ -4,7 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.snapshot.feature.screen.splash.SplashScreen
 
-const val SPLASH_ROUTE = "splash"
+const val SPLASH_ROUTE = "profile"
 
 // -> HomeNavigation과 다르게 스플래시 화면으로 이동할 필요가 없다면 적지 않아도 됩니다
 
