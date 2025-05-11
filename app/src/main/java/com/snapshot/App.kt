@@ -31,32 +31,36 @@ import com.snapshot.feature.screen.profile.ProfileScreen
 import com.snapshot.feature.screen.profile.navigation.profileScreen
 import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 import com.snapshot.feature.screen.splash.navigation.splashScreen
+import com.snapshot.res.modifier.AppTheme
 
 
 @Composable
 fun App(navHostController: NavHostController = rememberNavController()) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            modifier = Modifier.systemBarsPadding(),
-            topBar = { TopBar() },
-            bottomBar = {
-            }
-        ) { innerPadding ->
-            NavHost(
-                navController = navHostController,
-                startDestination = SPLASH_ROUTE,
-                modifier = Modifier.padding(innerPadding),
-                enterTransition = { getEnterTransition(initialState, targetState) },
-                exitTransition = { getExitTransition(initialState, targetState) },
-                popEnterTransition = { getPopEnterTransition(initialState, targetState) },
-                popExitTransition = { getPopExitTransition(initialState, targetState) },
-            ) {
-                splashScreen(
-                    navigateToHome = navHostController::navigateToHome
-                ) // -> 모든 화면은 여기에서 호출되어야 합니다. 안그러면 에러 터집니다.
-                homeScreen()
-                profileScreen()
+    AppTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                modifier = Modifier.systemBarsPadding(),
+                topBar = { TopBar() },
+                bottomBar = {
+                    // 필요 시 하단 바 추가
+                }
+            ) { innerPadding ->
+                NavHost(
+                    navController = navHostController,
+                    startDestination = SPLASH_ROUTE,
+                    modifier = Modifier.padding(innerPadding),
+                    enterTransition = { getEnterTransition(initialState, targetState) },
+                    exitTransition = { getExitTransition(initialState, targetState) },
+                    popEnterTransition = { getPopEnterTransition(initialState, targetState) },
+                    popExitTransition = { getPopExitTransition(initialState, targetState) },
+                ) {
+                    splashScreen(
+                        navigateToHome = navHostController::navigateToHome
+                    )
+                    homeScreen()
+                    profileScreen()
+                }
             }
         }
     }

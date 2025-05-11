@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.snapshot.res.modifier.bg_light
+import com.snapshot.res.modifier.ColorTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -25,8 +25,7 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = bg_light)
+            .background(color = ColorTheme.colors.bg)
     ) {
-
     }
 }
