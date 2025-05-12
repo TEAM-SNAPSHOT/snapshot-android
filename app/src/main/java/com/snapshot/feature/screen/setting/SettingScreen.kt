@@ -1,4 +1,4 @@
-package com.snapshot.feature.screen.profile
+package com.snapshot.feature.screen.setting
 
 import android.content.Intent
 import android.net.Uri
@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.snapshot.res.modifier.ColorTheme
 
 @Composable
-fun ProfileScreen(
+fun SettingScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current

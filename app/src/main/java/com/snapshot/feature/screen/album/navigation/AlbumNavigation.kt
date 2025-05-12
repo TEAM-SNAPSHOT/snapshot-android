@@ -4,8 +4,6 @@ import AlbumScreen
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.snapshot.feature.screen.home.navigation.HOME_ROUTE
-import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 
 const val ALBUM_ROUTE = "album"
 

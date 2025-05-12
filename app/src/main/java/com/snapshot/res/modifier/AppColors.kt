@@ -19,7 +19,10 @@ data class AppColorScheme(
     val normal: Color,
     val dark: Color,
     val light: Color,
-    val black : Color
+    val black : Color,
+    val iconSelected: Color,
+    val iconNotSelected: Color,
+    val shadow: Color
 )
 
 val LightAppColors = AppColorScheme(
@@ -35,12 +38,16 @@ val LightAppColors = AppColorScheme(
     dark = Color(0xFF888888),
     light = Color(0xFFEAEAEA),
     black = Color(0xFF2B2B2B),
+    iconSelected = Color(0xFFFE969A),
+    iconNotSelected = Color(0xFF727276),
+    shadow = Color(0xFF121212)
 )
 
 val DarkAppColors = LightAppColors.copy(
     bg = Color(0xFF2B2B2B),
     gray = Color(0xFF444444),
     lightGray = Color(0xFF555555),
+    shadow = Color.White
 )
 
 internal val LocalColors = staticCompositionLocalOf { LightAppColors }
