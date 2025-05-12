@@ -22,15 +22,16 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.snapshot.res.modifier.ColorTheme
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
+    var shotTime by remember { mutableStateOf("8") }
+    var albumName by remember { mutableStateOf("스냅샷") }
 
     val aosUsers = listOf(
         "sincerxly" to "김성한",
@@ -90,8 +91,7 @@ fun ProfileScreen(
                             color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                         )
                         TextField(
-                            modifier = modifier
-                                .width(144.dp),
+                            modifier = modifier.width(144.dp),
                             shape = RoundedCornerShape(8.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = ColorTheme.colors.gray,
@@ -103,17 +103,17 @@ fun ProfileScreen(
                             ),
                             textStyle = LocalTextStyle.current.copy(
                                 fontSize = 16.sp,
-                                textAlign = TextAlign.Start,
                                 color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                             ),
                             singleLine = true,
-                            value = viewModel.albumName,
-                            onValueChange = {
-                                viewModel.updateAlbumName(it)
-                            }
+                            value = albumName,
+                            onValueChange = { albumName = it }
                         )
                     }
+
                     HorizontalDivider(thickness = 1.dp, color = ColorTheme.colors.gray)
+
+                    // 촬영 시간
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -139,8 +139,7 @@ fun ProfileScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             TextField(
-                                modifier = modifier
-                                    .width(55.dp),
+                                modifier = modifier.width(55.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = ColorTheme.colors.gray,
@@ -156,10 +155,10 @@ fun ProfileScreen(
                                     color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                                 ),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                value = viewModel.shotTime,
+                                value = shotTime,
                                 onValueChange = {
                                     if (it.length <= 2 && (it.isEmpty() || it.all { c -> c.isDigit() })) {
-                                        viewModel.updateShotTime(it)
+                                        shotTime = it
                                     }
                                 },
                                 singleLine = true,
@@ -172,6 +171,8 @@ fun ProfileScreen(
                         }
                     }
                 }
+
+                // 크레딧
                 Column(
                     modifier = modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -206,11 +207,12 @@ fun ProfileScreen(
                                     textAlign = TextAlign.End,
                                     color = ColorTheme.colors.blue,
                                     textDecoration = TextDecoration.None
-                                    ),
+                                ),
                                 onClick = { offset ->
                                     aosAnnotated.getStringAnnotations(start = offset, end = offset).firstOrNull()?.let {
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                                        context.startActivity(intent)
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(intent) // Aplication어쩌구로 안됨
                                     }
                                 }
                             )
