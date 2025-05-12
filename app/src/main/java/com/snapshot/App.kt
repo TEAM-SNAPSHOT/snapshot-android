@@ -14,6 +14,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
@@ -26,10 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.snapshot.feature.component.bottomBar.BottomNavigationBar
 import com.snapshot.feature.component.topbar.TopBar
 import com.snapshot.feature.screen.album.navigation.ALBUM_ROUTE
@@ -47,18 +50,12 @@ import kotlinx.coroutines.flow.map
 fun App(navHostController: NavHostController = rememberNavController()) {
     var currentRoute by remember { mutableStateOf(ALBUM_ROUTE) }
     var showBottomNav by remember { mutableStateOf(true) }
-    val context = SnapShotApplication.getContext()
-    val window = (context as? Activity)?.window
-    val color = ColorTheme.colors.bg.toArgb()
+    val systemUiController = rememberSystemUiController()
 
 
     SideEffect {
-        window?.let {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                it.statusBarColor = color
-                it.navigationBarColor = color
-            }
-        }
+        systemUiController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     LaunchedEffect(navHostController) {
@@ -72,10 +69,13 @@ fun App(navHostController: NavHostController = rememberNavController()) {
     }
 
     AppTheme {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+        ) {
             Scaffold(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                modifier = Modifier.systemBarsPadding(),
                 topBar = { TopBar() },
                 bottomBar = {
                     AnimatedVisibility(
