@@ -10,7 +10,7 @@ import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 const val ALBUM_ROUTE = "album"
 
 fun NavController.navigateToAlbum() {
-    this.navigate(HOME_ROUTE)
+    this.navigate(ALBUM_ROUTE)
 }
 
 fun NavGraphBuilder.albumScreen() {
