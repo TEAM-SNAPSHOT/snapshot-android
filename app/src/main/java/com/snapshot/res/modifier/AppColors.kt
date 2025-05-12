@@ -44,7 +44,6 @@ val DarkAppColors = LightAppColors.copy(
 )
 
 internal val LocalColors = staticCompositionLocalOf { LightAppColors }
-
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

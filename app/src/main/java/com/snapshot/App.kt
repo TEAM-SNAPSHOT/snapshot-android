@@ -68,6 +68,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
     }
 }
 
+
 enum class TransitionDirection {
     LEFT, RIGHT, UP, DOWN, CUSTOM
 }

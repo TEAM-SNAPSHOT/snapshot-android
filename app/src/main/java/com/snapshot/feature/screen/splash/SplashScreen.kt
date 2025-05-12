@@ -1,6 +1,5 @@
 package com.snapshot.feature.screen.splash
 
-import android.window.SplashScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
