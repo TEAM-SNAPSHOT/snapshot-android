@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.snapshot.feature.component.topbar.TopBar
-import com.snapshot.res.modifier.bg_light
+import com.snapshot.res.modifier.ColorTheme
 
 @Composable
 fun HomeScreen(
@@ -15,7 +14,7 @@ fun HomeScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = bg_light)
+            .background(color = ColorTheme.colors.gray)
     ) {
     }
 }
