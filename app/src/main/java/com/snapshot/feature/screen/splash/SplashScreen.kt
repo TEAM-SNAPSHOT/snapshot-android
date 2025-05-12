@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.snapshot.res.modifier.ColorTheme
 import kotlinx.coroutines.delay
 
@@ -23,6 +26,5 @@ fun SplashScreen(
             .fillMaxSize()
             .background(color = ColorTheme.colors.bg)
     ) {
-
     }
 }

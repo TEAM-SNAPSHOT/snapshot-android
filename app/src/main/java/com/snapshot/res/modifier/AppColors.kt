@@ -19,6 +19,7 @@ data class AppColorScheme(
     val normal: Color,
     val dark: Color,
     val light: Color,
+    val black : Color
 )
 
 val LightAppColors = AppColorScheme(
@@ -33,6 +34,7 @@ val LightAppColors = AppColorScheme(
     normal = Color(0xFFFEDAB8),
     dark = Color(0xFF888888),
     light = Color(0xFFEAEAEA),
+    black = Color(0xFF2B2B2B),
 )
 
 val DarkAppColors = LightAppColors.copy(
@@ -42,7 +44,6 @@ val DarkAppColors = LightAppColors.copy(
 )
 
 internal val LocalColors = staticCompositionLocalOf { LightAppColors }
-
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -55,11 +56,10 @@ fun AppTheme(
     )
 }
 
+
 object ColorTheme {
     val colors: AppColorScheme
         @Composable
         @ReadOnlyComposable
         get() = LocalColors.current
 }
-
-
