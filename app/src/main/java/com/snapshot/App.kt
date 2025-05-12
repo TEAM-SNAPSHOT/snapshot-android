@@ -15,23 +15,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.snapshot.feature.component.navigation.BottomNavigationBar
 import com.snapshot.feature.component.topbar.TopBar
 import com.snapshot.feature.screen.home.navigation.homeScreen
 import com.snapshot.feature.screen.home.navigation.navigateToHome
-import com.snapshot.feature.screen.profile.ProfileScreen
-import com.snapshot.feature.screen.profile.navigation.profileScreen
+import com.snapshot.feature.screen.setting.navigation.settingScreen
 import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 import com.snapshot.feature.screen.splash.navigation.splashScreen
 import com.snapshot.res.modifier.AppTheme
+import com.snapshot.res.modifier.ColorTheme
 
 
 @Composable
@@ -43,8 +40,9 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                 modifier = Modifier.systemBarsPadding(),
                 topBar = { TopBar() },
                 bottomBar = {
-                    // 필요 시 하단 바 추가
-                }
+                    BottomNavigationBar(navHostController)
+                },
+                containerColor = ColorTheme.colors.bg
             ) { innerPadding ->
                 NavHost(
                     navController = navHostController,
@@ -59,7 +57,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                         navigateToHome = navHostController::navigateToHome
                     )
                     homeScreen()
-                    profileScreen()
+                    settingScreen()
                 }
             }
         }
