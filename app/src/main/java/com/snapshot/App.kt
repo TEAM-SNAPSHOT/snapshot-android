@@ -25,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.snapshot.feature.component.topbar.TopBar
+import com.snapshot.feature.screen.album.navigation.albumScreen
 import com.snapshot.feature.screen.home.navigation.homeScreen
 import com.snapshot.feature.screen.home.navigation.navigateToHome
 import com.snapshot.feature.screen.profile.ProfileScreen
@@ -60,6 +61,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                     )
                     homeScreen()
                     profileScreen()
+                    albumScreen()
                 }
             }
         }
