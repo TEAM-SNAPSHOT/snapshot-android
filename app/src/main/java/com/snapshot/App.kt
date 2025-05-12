@@ -1,5 +1,8 @@
 package com.snapshot
 
+import android.app.Activity
+import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
@@ -11,45 +14,83 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.snapshot.feature.component.bottomBar.BottomNavigationBar
 import com.snapshot.feature.component.topbar.TopBar
+import com.snapshot.feature.screen.album.navigation.ALBUM_ROUTE
 import com.snapshot.feature.screen.album.navigation.albumScreen
-import com.snapshot.feature.screen.home.navigation.homeScreen
-import com.snapshot.feature.screen.home.navigation.navigateToHome
-import com.snapshot.feature.screen.profile.ProfileScreen
-import com.snapshot.feature.screen.profile.navigation.profileScreen
-import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
+import com.snapshot.feature.screen.album.navigation.navigateToAlbum
+import com.snapshot.feature.screen.setting.navigation.settingScreen
 import com.snapshot.feature.screen.splash.navigation.splashScreen
 import com.snapshot.res.modifier.AppTheme
+import com.snapshot.res.modifier.ColorTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 
 @Composable
 fun App(navHostController: NavHostController = rememberNavController()) {
+    var currentRoute by remember { mutableStateOf(ALBUM_ROUTE) }
+    var showBottomNav by remember { mutableStateOf(true) }
+    val systemUiController = rememberSystemUiController()
+
+
+    SideEffect {
+        systemUiController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+
+    LaunchedEffect(navHostController) {
+        navHostController.currentBackStackEntryFlow
+            .map { it.destination.route ?: ALBUM_ROUTE }
+            .distinctUntilChanged()
+            .collect {
+                currentRoute = it
+            }
+        showBottomNav = currentRoute in listOf("album", "setting")
+    }
+
     AppTheme {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+        ) {
             Scaffold(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                modifier = Modifier.systemBarsPadding(),
                 topBar = { TopBar() },
                 bottomBar = {
-                    // 필요 시 하단 바 추가
-                }
+                    AnimatedVisibility(
+                        visible = showBottomNav,
+                        enter = slideInVertically { it },
+                        exit = slideOutVertically { it },
+                    ) {
+                        BottomNavigationBar(navHostController)
+                    }
+                },
+                containerColor = ColorTheme.colors.bg
             ) { innerPadding ->
                 NavHost(
                     navController = navHostController,
-                    startDestination = SPLASH_ROUTE,
+                    startDestination = ALBUM_ROUTE,
                     modifier = Modifier.padding(innerPadding),
                     enterTransition = { getEnterTransition(initialState, targetState) },
                     exitTransition = { getExitTransition(initialState, targetState) },
@@ -57,10 +98,9 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                     popExitTransition = { getPopExitTransition(initialState, targetState) },
                 ) {
                     splashScreen(
-                        navigateToHome = navHostController::navigateToHome
+                        navigateToHome = navHostController::navigateToAlbum
                     )
-                    homeScreen()
-                    profileScreen()
+                    settingScreen()
                     albumScreen()
                 }
             }
@@ -70,29 +110,18 @@ fun App(navHostController: NavHostController = rememberNavController()) {
 
 
 enum class TransitionDirection {
-    LEFT, RIGHT, UP, DOWN, CUSTOM
+    LEFT, RIGHT, UP, DOWN
 }
 
 private val transitionMap = mapOf(
-    "home" to mapOf(
-        "profile" to TransitionDirection.RIGHT,
-        "move" to TransitionDirection.LEFT
+    "setting" to mapOf(
+        "album" to TransitionDirection.LEFT,
     ),
-    "profile" to mapOf(
-        "home" to TransitionDirection.LEFT,
-        "move" to TransitionDirection.LEFT
+    "album" to mapOf(
+        "setting" to TransitionDirection.RIGHT,
     ),
-    "move" to mapOf(
-        "home" to TransitionDirection.RIGHT,
-        "profile" to TransitionDirection.RIGHT,
-        "signMove" to TransitionDirection.CUSTOM
-    ),
-    "signMove" to mapOf(
-        "home" to TransitionDirection.RIGHT,
-        "profile" to TransitionDirection.RIGHT,
-        "move" to TransitionDirection.CUSTOM
+
     )
-)
 
 private fun getTransitionDirection(from: String?, to: String?): TransitionDirection? {
     return transitionMap[from]?.get(to)
