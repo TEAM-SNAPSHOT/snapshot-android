@@ -1,12 +1,17 @@
 package com.snapshot.feature.screen.album.navigation
 
+import AlbumScreen
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.snapshot.feature.screen.album.AlbumScreen
+import com.snapshot.feature.screen.home.navigation.HOME_ROUTE
+import com.snapshot.feature.screen.splash.navigation.SPLASH_ROUTE
 
 const val ALBUM_ROUTE = "album"
 
-// -> HomeNavigation과 다르게 스플래시 화면으로 이동할 필요가 없다면 적지 않아도 됩니다
+fun NavController.navigateToAlbum() {
+    this.navigate(HOME_ROUTE)
+}
 
 fun NavGraphBuilder.albumScreen() {
     composable(
