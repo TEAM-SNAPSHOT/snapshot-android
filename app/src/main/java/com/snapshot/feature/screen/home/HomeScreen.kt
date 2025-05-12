@@ -14,7 +14,7 @@ fun HomeScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = ColorTheme.colors.bg)
+            .background(color = ColorTheme.colors.gray)
     ) {
     }
 }

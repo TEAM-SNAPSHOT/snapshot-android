@@ -22,28 +22,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.snapshot.res.modifier.ColorTheme
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
-    var shotTime by remember { mutableStateOf("8") }
-    var albumName by remember { mutableStateOf("스냅샷") }
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel()
+) {
     val context = LocalContext.current
-
-    val iosUser = "cher1shRXD" to "김태우"
-    val iosAnnotated = buildAnnotatedString {
-        val (id, name) = iosUser
-        pushStringAnnotation(tag = "iOS", annotation = "https://github.com/$id")
-        withStyle(
-            style = SpanStyle(
-                color = ColorTheme.colors.blue,
-                textDecoration = TextDecoration.Underline
-            )
-        ) {
-            append("$id ($name)")
-        }
-        pop()
-    }
 
     val aosUsers = listOf(
         "sincerxly" to "김성한",
@@ -91,18 +78,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                         .background(color = ColorTheme.colors.bg, shape = RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 16.dp)
                 ) {
-                    Row(
-                        modifier = modifier.height(28.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "다크모드",
-                            fontSize = 16.sp,
-                            color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
-                        )
-                    }
-                    HorizontalDivider(thickness = 1.dp, color = ColorTheme.colors.gray)
+                    // 앨범 이름
                     Row(
                         modifier = modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -115,7 +91,6 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                         )
                         TextField(
                             modifier = modifier
-                                .height(48.dp)
                                 .width(144.dp),
                             shape = RoundedCornerShape(8.dp),
                             colors = TextFieldDefaults.colors(
@@ -132,8 +107,10 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                 color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                             ),
                             singleLine = true,
-                            value = albumName,
-                            onValueChange = { albumName = it }
+                            value = viewModel.albumName,
+                            onValueChange = {
+                                viewModel.updateAlbumName(it)
+                            }
                         )
                     }
                     HorizontalDivider(thickness = 1.dp, color = ColorTheme.colors.gray)
@@ -163,8 +140,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                         ) {
                             TextField(
                                 modifier = modifier
-                                    .width(55.dp)
-                                    .height(48.dp),
+                                    .width(55.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = ColorTheme.colors.gray,
@@ -180,10 +156,10 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                                     color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                                 ),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                value = shotTime,
+                                value = viewModel.shotTime,
                                 onValueChange = {
                                     if (it.length <= 2 && (it.isEmpty() || it.all { c -> c.isDigit() })) {
-                                        shotTime = it
+                                        viewModel.updateShotTime(it)
                                     }
                                 },
                                 singleLine = true,
@@ -219,35 +195,18 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "iOS",
-                                fontSize = 16.sp,
-                                color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
-                            )
-                            ClickableText(
-                                text = iosAnnotated,
-                                style = LocalTextStyle.current.copy(fontSize = 16.sp, textAlign = TextAlign.End),
-                                onClick = { offset ->
-                                    iosAnnotated.getStringAnnotations(start = offset, end = offset).firstOrNull()?.let {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                                        context.startActivity(intent)
-                                    }
-                                }
-                            )
-                        }
-                        HorizontalDivider(thickness = 1.dp, color = ColorTheme.colors.gray)
-                        Row(
-                            modifier = modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "AOS",
+                                text = "만든사람",
                                 fontSize = 16.sp,
                                 color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
                             )
                             ClickableText(
                                 text = aosAnnotated,
-                                style = LocalTextStyle.current.copy(fontSize = 16.sp, textAlign = TextAlign.End),
+                                style = LocalTextStyle.current.copy(
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.End,
+                                    color = ColorTheme.colors.blue,
+                                    textDecoration = TextDecoration.None
+                                    ),
                                 onClick = { offset ->
                                     aosAnnotated.getStringAnnotations(start = offset, end = offset).firstOrNull()?.let {
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))

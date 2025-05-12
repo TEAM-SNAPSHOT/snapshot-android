@@ -34,7 +34,7 @@ val LightAppColors = AppColorScheme(
     normal = Color(0xFFFEDAB8),
     dark = Color(0xFF888888),
     light = Color(0xFFEAEAEA),
-    black = Color(0x00000000),
+    black = Color(0xFF2B2B2B),
 )
 
 val DarkAppColors = LightAppColors.copy(
@@ -56,6 +56,7 @@ fun AppTheme(
         content = content
     )
 }
+
 
 object ColorTheme {
     val colors: AppColorScheme
