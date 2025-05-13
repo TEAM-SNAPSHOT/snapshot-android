@@ -11,7 +11,7 @@ enum class Destination(
     val label: String
 ) {
     ALBUM(R.drawable.photo, ALBUM_ROUTE, "앨범"),
-    SETTING(R.drawable.setting, SETTING_ROUTE, "설장");
+    SETTING(R.drawable.setting, SETTING_ROUTE, "설정");
 
     @Composable
     fun getIcon(): Int {
