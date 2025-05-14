@@ -50,6 +50,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.camera.camera2)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,6 +64,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.activity.compose)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // 이미지 로딩 라이브러리
     implementation(libs.coil.compose)

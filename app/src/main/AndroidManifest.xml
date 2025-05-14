@@ -3,13 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Android 13 이상 -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <!-- Android 12 이하 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <queries>
-        <!-- Instagram 앱 패키지명 명시 -->
-        <package android:name="com.instagram.android" />
-    </queries>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:name=".SnapShotApplication"
         android:allowBackup="true"

@@ -2,11 +2,13 @@ package com.snapshot
 
 import android.app.Activity
 import android.os.Build
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -28,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -38,6 +41,15 @@ import com.snapshot.feature.component.topbar.TopBar
 import com.snapshot.feature.screen.album.navigation.ALBUM_ROUTE
 import com.snapshot.feature.screen.album.navigation.albumScreen
 import com.snapshot.feature.screen.album.navigation.navigateToAlbum
+import com.snapshot.feature.screen.chooseFrame.navigation.chooseFrameScreen
+import com.snapshot.feature.screen.chooseFrame.navigation.navigateToChooseFrame
+import com.snapshot.feature.screen.choosePhoto.navigation.choosePhotoScreen
+import com.snapshot.feature.screen.choosePhoto.navigation.navigateToChoosePhoto
+import com.snapshot.feature.screen.filter.navigation.filterScreen
+import com.snapshot.feature.screen.filter.navigation.navigateToFilter
+import com.snapshot.feature.screen.photo.navigation.navigateToPhoto
+import com.snapshot.feature.screen.photo.navigation.photoScreen
+import com.snapshot.feature.screen.photo.viewModel.PhotoViewModel
 import com.snapshot.feature.screen.setting.navigation.settingScreen
 import com.snapshot.feature.screen.splash.navigation.splashScreen
 import com.snapshot.res.modifier.AppTheme
@@ -46,12 +58,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 
+
 @Composable
 fun App(navHostController: NavHostController = rememberNavController()) {
     var currentRoute by remember { mutableStateOf(ALBUM_ROUTE) }
     var showBottomNav by remember { mutableStateOf(true) }
     val systemUiController = rememberSystemUiController()
-
+    val photoViewModel: PhotoViewModel = viewModel()
 
     SideEffect {
         systemUiController.systemBarsBehavior =
@@ -64,8 +77,8 @@ fun App(navHostController: NavHostController = rememberNavController()) {
             .distinctUntilChanged()
             .collect {
                 currentRoute = it
+                showBottomNav = currentRoute !in listOf("photo")
             }
-        showBottomNav = currentRoute in listOf("album", "setting")
     }
 
     AppTheme {
@@ -76,13 +89,13 @@ fun App(navHostController: NavHostController = rememberNavController()) {
         ) {
             Scaffold(
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                topBar = { TopBar() },
+                topBar = {
+                    if (showBottomNav) {
+                        TopBar()
+                    }
+                },
                 bottomBar = {
-                    AnimatedVisibility(
-                        visible = showBottomNav,
-                        enter = slideInVertically { it },
-                        exit = slideOutVertically { it },
-                    ) {
+                    if (showBottomNav) {
                         BottomNavigationBar(navHostController)
                     }
                 },
@@ -102,6 +115,18 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                     )
                     settingScreen()
                     albumScreen()
+                    chooseFrameScreen(navigateToPhoto = navHostController::navigateToPhoto)
+                    photoScreen(
+                        navigateToChoosePhoto = navHostController::navigateToChoosePhoto,
+                        navigateToAlbum = navHostController::navigateToAlbum,
+                        viewModel = photoViewModel
+                    )
+                    choosePhotoScreen(
+                        viewModel = photoViewModel,
+                        navigateToFilter = navHostController::navigateToFilter,
+                        navigateToPhoto = navHostController::navigateToPhoto
+                    )
+                    filterScreen()
                 }
             }
         }
@@ -134,10 +159,26 @@ fun getEnterTransition(initial: NavBackStackEntry, target: NavBackStackEntry): E
     return when {
         from == "move" && to == "signMove" -> slideInVertically { it } + fadeIn()
         from == "signMove" && to == "move" -> slideInVertically { -it } + fadeIn()
-        getTransitionDirection(from, to) == TransitionDirection.LEFT -> slideInHorizontally { -it } + fadeIn()
-        getTransitionDirection(from, to) == TransitionDirection.RIGHT -> slideInHorizontally { it } + fadeIn()
-        getTransitionDirection(from, to) == TransitionDirection.UP -> slideInVertically { -it } + fadeIn()
-        getTransitionDirection(from, to) == TransitionDirection.DOWN -> slideInVertically { it } + fadeIn()
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.LEFT -> slideInHorizontally { -it } + fadeIn()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.RIGHT -> slideInHorizontally { it } + fadeIn()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.UP -> slideInVertically { -it } + fadeIn()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.DOWN -> slideInVertically { it } + fadeIn()
+
         else -> EnterTransition.None
     }
 }
@@ -149,14 +190,29 @@ fun getExitTransition(initial: NavBackStackEntry, target: NavBackStackEntry): Ex
     return when {
         from == "move" && to == "signMove" -> slideOutVertically { -it } + fadeOut()
         from == "signMove" && to == "move" -> slideOutVertically { it } + fadeOut()
-        getTransitionDirection(from, to) == TransitionDirection.LEFT -> slideOutHorizontally { it } + fadeOut()
-        getTransitionDirection(from, to) == TransitionDirection.RIGHT -> slideOutHorizontally { -it } + fadeOut()
-        getTransitionDirection(from, to) == TransitionDirection.UP -> slideOutVertically { -it } + fadeOut()
-        getTransitionDirection(from, to) == TransitionDirection.DOWN -> slideOutVertically { it } + fadeOut()
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.LEFT -> slideOutHorizontally { it } + fadeOut()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.RIGHT -> slideOutHorizontally { -it } + fadeOut()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.UP -> slideOutVertically { -it } + fadeOut()
+
+        getTransitionDirection(
+            from,
+            to
+        ) == TransitionDirection.DOWN -> slideOutVertically { it } + fadeOut()
+
         else -> ExitTransition.None
     }
 }
-
 
 
 fun getPopEnterTransition(initial: NavBackStackEntry, target: NavBackStackEntry): EnterTransition {
