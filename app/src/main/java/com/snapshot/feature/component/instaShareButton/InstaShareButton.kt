@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
 import androidx.core.content.ContextCompat
@@ -48,7 +49,7 @@ import com.snapshot.R
 
 @Composable
 fun InstaShareButton(uri : Uri, context: Context) {
-    val backgroundUri = createBlackBackgroundUri(context)
+    val backgroundUri = createWhiteBackgroundUri(context)
     val file = File(context.getExternalFilesDir(null), "shared_image.jpg")
     val inputStream = context.contentResolver.openInputStream(uri)
     val outputStream = file.outputStream()
@@ -90,7 +91,7 @@ fun InstaShareButton(uri : Uri, context: Context) {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_ios_share_24  ),
                     contentDescription = "공유 아이콘",
-                    modifier = Modifier.height(24.dp).width(24.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -139,14 +140,14 @@ fun getMimeType(uri: Uri): String? {
     return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
 }
 
-fun createBlackBackgroundUri(context: Context): Uri {
+fun createWhiteBackgroundUri(context: Context): Uri {
     val width = 1080
     val height = 1920
 
     // 1. Bitmap 생성 (검정색)
     val blackBitmap = createBitmap(width, height)
     val canvas = Canvas(blackBitmap)
-    canvas.drawColor(0x00000000)
+    canvas.drawColor(0xFFFFFFFF.toInt())
 
     // 2. File 생성
     val file = File(context.getExternalFilesDir(null), "black_background.png")
