@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.snapshot.res.modifier.ColorTheme
 import getSetting.getAlbumName
 import getSetting.getShotTime
+import saveSetting.saveAlbumName
+import saveSetting.saveShotTime
 
 @Composable
 fun SettingScreen(
@@ -114,7 +116,10 @@ fun SettingScreen(
                             ),
                             singleLine = true,
                             value = albumName,
-                            onValueChange = { albumName = it }
+                            onValueChange = {
+                                albumName = it
+                                saveAlbumName(context, it)
+                            }
                         )
                     }
 
@@ -166,6 +171,7 @@ fun SettingScreen(
                                 onValueChange = {
                                     if (it.length <= 2 && (it.isEmpty() || it.all { c -> c.isDigit() })) {
                                         shotTime = it
+                                        saveShotTime(context, it)
                                     }
                                 },
                                 singleLine = true,
