@@ -15,6 +15,6 @@ fun NavGraphBuilder.albumScreen() {
     composable(
         route = ALBUM_ROUTE,
     ) {
-        AlbumScreen(albumName = "스크린샷")
+        AlbumScreen(albumName = "Screenshots")
     }
 }
