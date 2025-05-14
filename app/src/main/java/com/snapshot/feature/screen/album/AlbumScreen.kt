@@ -9,13 +9,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,13 +31,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import com.snapshot.SnapShotApplication
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.core.content.FileProvider
+import com.snapshot.feature.component.instaShareButton.InstaShareButton
+import com.snapshot.res.modifier.AppColorScheme
+import com.snapshot.res.modifier.AppTheme
+import com.snapshot.res.modifier.ColorTheme
+import com.snapshot.res.modifier.LightAppColors
+import kotlinx.coroutines.launch
+import java.io.File
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumScreen(albumName: String) {
     val context = SnapShotApplication.getContext()
@@ -89,9 +104,13 @@ fun AlbumScreen(albumName: String) {
         return imageUris
     }
 
+
+
     if (hasPermission) {
         val images = remember { mutableStateListOf<Uri>() }
         var selectedImage by remember { mutableStateOf<Uri?>(null) }
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val scope = rememberCoroutineScope()
 
         LaunchedEffect(Unit) {
             val imageUris = loadImagesFromAlbum(context, albumName)
@@ -111,26 +130,38 @@ fun AlbumScreen(albumName: String) {
                             .padding(8.dp)
                             .clickable {
                                 selectedImage = uri
+                                scope.launch {
+                                    sheetState.show()
+                                }
                             }
                     )
                 }
             }
 
             selectedImage?.let { uri ->
-                Dialog(onDismissRequest = { selectedImage = null }) {
-                    Box(
-                        contentAlignment = Alignment.Center,
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        selectedImage = null
+                        scope.launch { sheetState.hide() }
+                    },
+                    sheetState = sheetState,
+                    containerColor = ColorTheme.colors.bg,
+
+                ) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.8f))
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+
                     ) {
                         Image(
                             painter = rememberAsyncImagePainter(uri),
                             contentDescription = null,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
+                                .fillMaxHeight(0.8f)
                         )
+                        InstaShareButton(uri,context)
                     }
                 }
             }
