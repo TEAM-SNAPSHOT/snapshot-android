@@ -159,7 +159,7 @@ fun AlbumScreen(albumName: String) {
                             painter = rememberAsyncImagePainter(uri),
                             contentDescription = null,
                             modifier = Modifier
-                                .fillMaxWidth(0.5f)
+                                .fillMaxHeight(0.8f)
                         )
                         InstaShareButton(uri,context)
                     }

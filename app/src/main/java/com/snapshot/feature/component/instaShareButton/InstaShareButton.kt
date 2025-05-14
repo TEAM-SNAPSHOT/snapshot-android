@@ -27,11 +27,24 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.Log
 import android.webkit.MimeTypeMap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
+import com.snapshot.R
 
 @Composable
 fun InstaShareButton(uri : Uri, context: Context) {
@@ -48,25 +61,38 @@ fun InstaShareButton(uri : Uri, context: Context) {
         "${context.packageName}.fileprovider",
         file
     )
+    val interactionSource = remember { MutableInteractionSource() }
+
     Button(
-        modifier = Modifier.fillMaxWidth(0.9f).height(48.dp),
-        onClick = { shareToInstagramStory(context, backgroundUri ,uri) },
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .height(48.dp),
+        onClick = { shareToInstagramStory(context, backgroundUri, imageUriForInstagram) },
         enabled = true,
-        shape = RoundedCornerShape(12.dp), // ✅ 모서리 둥글게 (radius)
+        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = ColorTheme.colors.main, // 버튼 배경색
-            contentColor = Color.White         // 텍스트 색
+            containerColor = ColorTheme.colors.main,
+            contentColor = Color.White
         ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp,
-            disabledElevation = 0.dp
-        ),
-        border = BorderStroke(0.dp, ColorTheme.colors.main),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp), // ✅ 내부 여백
-        interactionSource = remember { MutableInteractionSource() }, // ✅ 터치/포커스 추적
+        interactionSource = interactionSource,
         content = {
-            Text(text = "스토리에 공유하기")
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "스토리에 공유하기",
+                    color = ColorTheme.colors.white,
+                    fontSize = 15.sp
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_ios_share_24  ),
+                    contentDescription = "공유 아이콘",
+                    modifier = Modifier.height(24.dp).width(24.dp)
+                )
+            }
         }
     )
 }
