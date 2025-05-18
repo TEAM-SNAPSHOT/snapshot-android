@@ -40,19 +40,21 @@ import androidx.core.content.FileProvider
 import com.snapshot.SnapShotApplication
 import com.snapshot.feature.component.instaShareButton.InstaShareButton
 import com.snapshot.res.modifier.ColorTheme
+import getSetting.getAlbumName
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbumScreen(albumName: String) {
+fun AlbumScreen() {
     val context = SnapShotApplication.getContext()
     val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
+    val albumName = getAlbumName(context)
 
     var hasPermission by remember {
         mutableStateOf(
