@@ -12,11 +12,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,11 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.navigation.compose.NavHost
 import com.snapshot.SnapShotApplication
 import com.snapshot.feature.component.instaShareButton.InstaShareButton
+import com.snapshot.res.modifier.AppTheme
 import com.snapshot.res.modifier.ColorTheme
 import getSetting.getAlbumName
 import kotlinx.coroutines.launch
@@ -47,13 +53,16 @@ import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlbumScreen() {
+fun AlbumScreen(
+    navigateToPhoto: () -> Unit,
+) {
     val context = SnapShotApplication.getContext()
     val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_IMAGES
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
+
     val albumName = getAlbumName(context)
 
     var hasPermission by remember {
@@ -127,75 +136,92 @@ fun AlbumScreen() {
             images.clear()
             images.addAll(loadedBitmaps)
         }
-
-        Box {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp)
-            ) {
-                items(images.size) { index ->
-                    val bitmap = images[index]
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(4.dp)
-                            .clickable {
-                                selectedImage = bitmap
-                                scope.launch {
-                                    sheetState.show()
-                                }
-                            }
-                    )
-                }
-            }
-
-            selectedImage?.let { bitmap ->
-                // Bitmap → Uri 변환
-                val file = File(context.getExternalFilesDir(null), "selected_image.jpg")
-                val outputStream = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                outputStream.flush()
-                outputStream.close()
-
-                val imageUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    file
-                )
-
-                ModalBottomSheet(
-                    onDismissRequest = {
-                        selectedImage = null
-                        scope.launch { sheetState.hide() }
-                    },
-                    sheetState = sheetState,
-                    containerColor = ColorTheme.colors.bg,
+        if (images.isNotEmpty()) {
+            Box {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(4.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    items(images.size) { index ->
+                        val bitmap = images[index]
                         Image(
                             bitmap = bitmap.asImageBitmap(),
                             contentDescription = null,
-                            modifier = Modifier.fillMaxHeight(0.8f)
-                        )
-                        InstaShareButton(
-                            uri = imageUri,
-                            context = context
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(4.dp)
+                                .clickable {
+                                    selectedImage = bitmap
+                                    scope.launch {
+                                        sheetState.show()
+                                    }
+                                }
                         )
                     }
                 }
+
+                selectedImage?.let { bitmap ->
+                    // Bitmap → Uri 변환
+                    val file = File(context.getExternalFilesDir(null), "selected_image.jpg")
+                    val outputStream = FileOutputStream(file)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                    outputStream.flush()
+                    outputStream.close()
+
+                    val imageUri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        file
+                    )
+
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            selectedImage = null
+                            scope.launch { sheetState.hide() }
+                        },
+                        sheetState = sheetState,
+                        containerColor = ColorTheme.colors.bg,
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxHeight(0.8f)
+                            )
+                            InstaShareButton(
+                                uri = imageUri,
+                                context = context
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text("아직 찍은 사진이 없습니다", color = ColorTheme.colors.font)
+                Spacer(modifier = Modifier.size(6.dp))
+                Text(modifier = Modifier.clickable { navigateToPhoto() },text = "사진 찍으러 가기", color = ColorTheme.colors.main, textDecoration = TextDecoration.Underline, )
             }
         }
     } else {
-        Text("갤러리 접근 권한이 필요합니다.")
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text("갤러리 접근 권한이 필요합니다.", color = ColorTheme.colors.font)
+        }
     }
 }

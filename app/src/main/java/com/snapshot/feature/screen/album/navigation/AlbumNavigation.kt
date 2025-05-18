@@ -11,10 +11,12 @@ fun NavController.navigateToAlbum() {
     this.navigate(ALBUM_ROUTE)
 }
 
-fun NavGraphBuilder.albumScreen() {
+fun NavGraphBuilder.albumScreen(
+    navigateToPhoto: () -> Unit,
+) {
     composable(
         route = ALBUM_ROUTE,
     ) {
-        AlbumScreen()
+        AlbumScreen(navigateToPhoto = navigateToPhoto,)
     }
 }
