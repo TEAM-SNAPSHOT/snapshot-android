@@ -114,7 +114,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                         navigateToHome = navHostController::navigateToAlbum
                     )
                     settingScreen()
-                    albumScreen()
+                    albumScreen(navigateToPhoto = navHostController::navigateToPhoto)
                     chooseFrameScreen(navigateToPhoto = navHostController::navigateToPhoto)
                     photoScreen(
                         navigateToChoosePhoto = navHostController::navigateToChoosePhoto,
