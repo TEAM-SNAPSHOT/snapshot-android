@@ -1,6 +1,8 @@
 package com.snapshot.feature.screen.choosePhoto
 
 import android.graphics.Bitmap
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,6 +68,8 @@ fun ChoosePhotoScreen(
     val photoBitmaps = viewModel.capturedPhotos
     val selectedPhotosOrder = viewModel.selectedPhotosOrder
 
+    val columns = if (viewModel.selectedFrameIndex.intValue >= 16) 2 else 3
+
     Scaffold (
         modifier = Modifier
             .fillMaxSize()
@@ -112,7 +116,34 @@ fun ChoosePhotoScreen(
                     modifier = Modifier
                         .pressEffect(
                             onClick = {
-                                navigateToFilter()
+                                val selectedBitmaps =
+                                    viewModel.selectedPhotosOrder.mapNotNull { index ->
+                                        viewModel.capturedPhotos.getOrNull(index)
+                                    }
+
+                                if (viewModel.selectedFrameIndex.intValue >= 16) {
+                                    if (selectedBitmaps.size == 3) {
+                                        navigateToFilter()
+                                    } else {
+                                        Toast.makeText(
+                                            SnapShotApplication.getContext(),
+                                            "사진 3장을 선택해주세요!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                } else {
+                                    if (selectedBitmaps.size == 4) {
+                                        navigateToFilter()
+                                    } else {
+                                        Toast.makeText(
+                                            SnapShotApplication.getContext(),
+                                            "사진 4장을 선택해주세요!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+
+                                Log.d("인덱스", "ChoosePhotoScreen: ${viewModel.selectedPhotoIndex}")
                             }
                         )
                         .background(
@@ -148,14 +179,14 @@ fun ChoosePhotoScreen(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "사진을 선택해주세요 (최대 4개)",
+                text = "사진을 선택해주세요 (최대 ${if (viewModel.selectedFrameIndex.intValue >= 16) 3 else 4}개)",
                 fontSize = 14.sp,
                 color = ColorTheme.colors.font
             )
             Spacer(Modifier.height(16.dp))
 
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(columns),
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(4.dp)
             ) {
@@ -174,7 +205,8 @@ fun ChoosePhotoScreen(
                             selectionOrder = selectionOrder,
                             onPhotoSelected = {
                                 viewModel.selectPhoto(it)
-                            }
+                            },
+                            isVertical = viewModel.selectedFrameIndex.intValue >= 16
                         )
                     }
                 }
@@ -188,24 +220,25 @@ fun OptimizedPhotoItem(
     bitmap: Bitmap,
     index: Int,
     isSelected: Boolean,
+    isVertical: Boolean,
     selectionOrder: Int?,
     onPhotoSelected: (Int) -> Unit
 ) {
+    val aspectRatio = if (isVertical) 4 / 3f else 3 / 4f
+
     Box(
         modifier = Modifier
-            .aspectRatio(3/4f)
+            .aspectRatio(aspectRatio)
             .padding(4.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (isSelected) Color.Gray.copy(alpha = 0.2f) else Color.Transparent,
-                    RoundedCornerShape(8.dp)
                 )
                 .then(
-                    if (isSelected) Modifier.border(2.dp, ColorTheme.colors.main, RoundedCornerShape(8.dp))
+                    if (isSelected) Modifier.border(2.dp, ColorTheme.colors.main)
                     else Modifier
                 )
                 .clickable(
@@ -243,3 +276,4 @@ fun OptimizedPhotoItem(
         }
     }
 }
+
