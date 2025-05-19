@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -103,13 +104,14 @@ fun SettingScreen(
                             modifier = modifier.width(144.dp),
                             shape = RoundedCornerShape(8.dp),
                             colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = ColorTheme.colors.gray,
-                                unfocusedIndicatorColor = ColorTheme.colors.gray,
-                                disabledIndicatorColor = ColorTheme.colors.gray,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
                                 focusedContainerColor = ColorTheme.colors.gray,
                                 unfocusedContainerColor = ColorTheme.colors.gray,
                                 disabledContainerColor = ColorTheme.colors.gray,
-                            ),
+                            )
+                            ,
                             textStyle = LocalTextStyle.current.copy(
                                 fontSize = 16.sp,
                                 color = if (isSystemInDarkTheme()) ColorTheme.colors.white else ColorTheme.colors.black
@@ -154,9 +156,9 @@ fun SettingScreen(
                                 modifier = modifier.width(55.dp),
                                 shape = RoundedCornerShape(8.dp),
                                 colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = ColorTheme.colors.gray,
-                                    unfocusedIndicatorColor = ColorTheme.colors.gray,
-                                    disabledIndicatorColor = ColorTheme.colors.gray,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
                                     focusedContainerColor = ColorTheme.colors.gray,
                                     unfocusedContainerColor = ColorTheme.colors.gray,
                                     disabledContainerColor = ColorTheme.colors.gray,

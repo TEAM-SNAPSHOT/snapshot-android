@@ -48,21 +48,16 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
-import androidx.navigation.compose.NavHost
 import com.snapshot.SnapShotApplication
 import com.snapshot.feature.component.instaShareButton.InstaShareButton
-import com.snapshot.res.modifier.AppTheme
 import com.snapshot.res.modifier.ColorTheme
 import getSetting.getAlbumName
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlbumScreen(
-    navigateToPhoto: () -> Unit,
+    navigateToChooseFrame: () -> Unit,
 ) {
     val context = SnapShotApplication.getContext()
     val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -93,45 +88,6 @@ fun AlbumScreen(
         if (!hasPermission) {
             launcher.launch(permission)
         }
-    }
-
-    fun loadBitmapsFromAlbum(context: Context, albumName: String): List<Bitmap> {
-        val bitmaps = mutableListOf<Bitmap>()
-        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-
-        val projection = arrayOf(
-            MediaStore.Images.Media._ID,
-            MediaStore.Images.Media.BUCKET_DISPLAY_NAME
-        )
-
-        val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
-        val selectionArgs = arrayOf(albumName)
-        val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
-
-        context.contentResolver.query(
-            collection,
-            projection,
-            selection,
-            selectionArgs,
-            sortOrder
-        )?.use { cursor ->
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            while (cursor.moveToNext()) {
-                val id = cursor.getLong(idColumn)
-                val uri = ContentUris.withAppendedId(collection, id)
-
-                val bitmap = try {
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                } catch (e: Exception) {
-                    null
-                }
-
-                if (bitmap != null) {
-                    bitmaps.add(bitmap)
-                }
-            }
-        }
-        return bitmaps
     }
 
     fun loadPhotosFromAlbum(context: Context, albumName: String): List<Photo> {
@@ -213,7 +169,7 @@ fun AlbumScreen(
                         try {
                             val rowsDeleted = context.contentResolver.delete(imageUri, null, null)
                             if (rowsDeleted > 0) {
-                                images.removeIf { it == imageUri }
+                                images.removeIf { it.uri == imageUri }
                                 selectedImage = null
                                 scope.launch { sheetState.hide() }
                             }
@@ -281,7 +237,7 @@ fun AlbumScreen(
             ) {
                 Text("아직 찍은 사진이 없습니다", color = ColorTheme.colors.font)
                 Spacer(modifier = Modifier.size(6.dp))
-                Text(modifier = Modifier.clickable { navigateToPhoto() },text = "사진 찍으러 가기", color = ColorTheme.colors.main, textDecoration = TextDecoration.Underline, )
+                Text(modifier = Modifier.clickable { navigateToChooseFrame() },text = "사진 찍으러 가기", color = ColorTheme.colors.main, textDecoration = TextDecoration.Underline, )
             }
         }
     } else {

@@ -1,54 +1,42 @@
 package com.snapshot.feature.component.instaShareButton
 
-import android.net.Uri
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material3.Button
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.snapshot.res.modifier.ColorTheme
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.util.Log
+import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import androidx.core.graphics.createBitmap
+import com.snapshot.R
+import com.snapshot.res.modifier.ColorTheme
 import java.io.File
 import java.io.FileOutputStream
-import androidx.core.graphics.createBitmap
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.sp
-import com.snapshot.R
 
 @Composable
-fun InstaShareButton(image : Bitmap, context: Context) {
+fun InstaShareButton(image : Bitmap, context: Context, modifier: Modifier = Modifier) {
     // Bitmap → Uri 변환
     fun bitmapToUri(bitmap: Bitmap): Uri {
         val file = File(context.getExternalFilesDir(null), "selected_image.jpg")
@@ -81,7 +69,7 @@ fun InstaShareButton(image : Bitmap, context: Context) {
     val interactionSource = remember { MutableInteractionSource() }
 
     Button(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(0.9f)
             .height(48.dp),
         onClick = { shareToInstagramStory(context, backgroundUri, imageUriForInstagram) },

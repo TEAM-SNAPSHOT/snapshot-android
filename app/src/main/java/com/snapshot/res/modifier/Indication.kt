@@ -5,28 +5,26 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 fun Modifier.pressEffect(
     scaleDown: Float = 0.95f,
     darkenColor: Color = Color.Black,
     darkenAlpha: Float = 0.1f,
     animationDuration: Int = 100,
-    onClick: () -> Unit,
+    onClick: suspend () -> Unit,
     enable: Boolean = true
 ): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
+    val coroutineScope = rememberCoroutineScope()
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) scaleDown else 1f,
@@ -57,7 +55,11 @@ fun Modifier.pressEffect(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = {
+                    coroutineScope.launch {
+                        onClick()
+                    }
+                }
             )
     } else {
         this
@@ -76,3 +78,4 @@ fun Modifier.pressEffect(
             }
     }
 }
+

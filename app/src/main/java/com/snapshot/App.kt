@@ -1,14 +1,9 @@
 package com.snapshot
 
-import android.app.Activity
-import android.os.Build
-import androidx.activity.ComponentActivity
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -18,7 +13,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -47,6 +40,8 @@ import com.snapshot.feature.screen.choosePhoto.navigation.choosePhotoScreen
 import com.snapshot.feature.screen.choosePhoto.navigation.navigateToChoosePhoto
 import com.snapshot.feature.screen.filter.navigation.filterScreen
 import com.snapshot.feature.screen.filter.navigation.navigateToFilter
+import com.snapshot.feature.screen.insta.navigation.instaScreen
+import com.snapshot.feature.screen.insta.navigation.navigateToInsta
 import com.snapshot.feature.screen.photo.navigation.navigateToPhoto
 import com.snapshot.feature.screen.photo.navigation.photoScreen
 import com.snapshot.feature.screen.photo.viewModel.PhotoViewModel
@@ -56,7 +51,6 @@ import com.snapshot.res.modifier.AppTheme
 import com.snapshot.res.modifier.ColorTheme
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-
 
 
 @Composable
@@ -77,7 +71,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
             .distinctUntilChanged()
             .collect {
                 currentRoute = it
-                showBottomNav = currentRoute !in listOf("photo", "filter")
+                showBottomNav = currentRoute !in listOf("photo", "filter", "insta")
             }
     }
 
@@ -114,7 +108,9 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                         navigateToHome = navHostController::navigateToAlbum
                     )
                     settingScreen()
-                    albumScreen()
+                    albumScreen(
+                        navigateToChooseFrame = navHostController::navigateToChooseFrame
+                    )
                     chooseFrameScreen(
                         navigateToPhoto = navHostController::navigateToPhoto,
                         viewModel = photoViewModel
@@ -131,7 +127,11 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                     )
                     filterScreen(
                         viewModel = photoViewModel,
+                        navigateToInsta = navHostController::navigateToInsta,
+                    )
+                    instaScreen(
                         navigateToAlbum = navHostController::navigateToAlbum,
+                        viewModel = photoViewModel
                     )
                 }
             }

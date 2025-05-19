@@ -1,6 +1,5 @@
 package com.snapshot.feature.screen.filter
 
-import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
@@ -17,62 +16,54 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.snapshot.SnapShotApplication
+import androidx.compose.ui.viewinterop.AndroidView
 import com.snapshot.feature.screen.photo.viewModel.PhotoViewModel
 import com.snapshot.res.modifier.ColorTheme
 import com.snapshot.res.modifier.pressEffect
 import getSetting.getAlbumName
+import kotlinx.coroutines.delay
 
 
 @Composable
 fun FilterScreen(
     viewModel: PhotoViewModel,
-    navigateToAlbum: () -> Unit,
+    navigateToInsta: () -> Unit,
 ) {
     val context = LocalContext.current
-    val activity = context as Activity
     val imageList = viewModel.getSelectedPhoto()
 
-    var croppedImage by remember { mutableStateOf<Bitmap?>(null) }
-    val viewRef = remember { mutableStateOf<View?>(null) }
-
     var filterType by remember { mutableStateOf(FilterType.ORIGINAL) }
+    var startCapture by remember { mutableStateOf(false) }
+
+    val filterBoxRef = remember { mutableStateOf<ComposeView?>(null) }
 
     val grayscaleMatrix = ColorMatrix().apply { setToSaturation(0f) }
     val brightnessMatrix = ColorMatrix(
@@ -92,96 +83,56 @@ fun FilterScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        val rootView = activity.window.decorView.rootView
-        viewRef.value = rootView
-        val cropped = captureAndCropFilterScreen(rootView, context, isVertical = viewModel.selectedFrameIndex.intValue >= 16)
-        croppedImage = cropped
+    LaunchedEffect(startCapture) {
+        if (startCapture) {
+            delay(200)
+            val view = filterBoxRef.value
+            if (view != null) {
+                val bitmap = captureView(view)
+                saveBitmapToGallery(context, bitmap, getAlbumName(context))
+                viewModel.croppedImage = bitmap
+                Toast.makeText(context, "저장되었습니다", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "이미지를 캡처할 수 없습니다", Toast.LENGTH_SHORT).show()
+            }
+
+            navigateToInsta()
+            startCapture = false
+        }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color(0xFFF8F8F8))
-            .padding(8.dp)
+            .background(color = ColorTheme.colors.bg)
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.align(Alignment.Center),
         ) {
-            Box(
-                modifier = Modifier
-                    .systemBarsPadding()
-                    .padding(top = 20.dp)
-            ) {
-                if (viewModel.selectedFrameIndex.intValue <= 7) {
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 5.dp)
-                    ) {
-                        Column {
-                            Spacer(Modifier.height(86.dp))
-                            FilteredImage(bitmap = imageList[0], filter = currentFilter)
-                            Spacer(Modifier.height(10.dp))
-                            FilteredImage(bitmap = imageList[1], filter = currentFilter)
+            key(filterType) {
+                AndroidView(
+                    factory = { ctx ->
+                        ComposeView(ctx).apply {
+                            filterBoxRef.value = this
+                            setContent {
+                                FilterContent(
+                                    imageList = imageList,
+                                    filter = currentFilter,
+                                    frame = viewModel.selectedFrame!!,
+                                    selectedIndex = viewModel.selectedFrameIndex.intValue
+                                )
+                            }
                         }
-                        Spacer(Modifier.width(2.dp))
-                        Column {
-                            Spacer(Modifier.height(6.dp))
-                            FilteredImage(bitmap = imageList[2], filter = currentFilter)
-                            Spacer(Modifier.height(4.dp))
-                            FilteredImage(bitmap = imageList[3], filter = currentFilter)
-                        }
-                    }
-                } else if (viewModel.selectedFrameIndex.intValue <= 15) {
-                    Row(
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopCenter)
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 10.dp)
-                    ) {
-                        Column {
-                            FilteredImage(bitmap = imageList[0], filter = currentFilter)
-                            Spacer(Modifier.height(8.dp))
-                            FilteredImage(bitmap = imageList[1], filter = currentFilter)
-                        }
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Column {
-                            FilteredImage(bitmap = imageList[2], filter = currentFilter)
-                            Spacer(Modifier.height(8.dp))
-                            FilteredImage(bitmap = imageList[3], filter = currentFilter)
-                        }
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier
-                            .align(alignment = Alignment.TopCenter)
-                            .padding(horizontal = 8.dp)
-                            .padding(top = 10.dp)
-                    ) {
-                        Column {
-                            Spacer(Modifier.height(4.dp))
-                            FilteredImage(bitmap = imageList[0], filter = currentFilter, isVertical = true)
-                            Spacer(Modifier.height(12.dp))
-                            FilteredImage(bitmap = imageList[1], filter = currentFilter, isVertical = true)
-                            Spacer(Modifier.height(12.dp))
-                            FilteredImage(bitmap = imageList[2], filter = currentFilter, isVertical = true)
-                        }
-                    }
-                }
-                Image(
-                    painter = viewModel.selectedFrame!!,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .width(250.dp)
-                        .height(402.28.dp)
-                        .align(alignment = Alignment.TopCenter)
+                    },
+                    modifier = Modifier.wrapContentSize()
                 )
             }
 
-            Spacer(Modifier.height(10.dp))
 
+            Spacer(Modifier.height(10.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -200,27 +151,14 @@ fun FilterScreen(
             }
 
         }
+
         Box(
             modifier = Modifier
                 .pressEffect(
                     onClick = {
-                        val rootView = viewRef.value
-                        if (rootView != null) {
-                            val newCapture = captureAndCropFilterScreen(
-                                rootView,
-                                context,
-                                isVertical = viewModel.selectedFrameIndex.intValue >= 16
-                            )
-                            saveBitmapToGallery(context, newCapture, getAlbumName(context))
-                            Toast.makeText(context, "저장되었습니다", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "이미지를 캡처할 수 없습니다", Toast.LENGTH_SHORT).show()
-                        }
-
-                        navigateToAlbum()
+                        startCapture = true
                     }
                 )
-
                 .fillMaxWidth()
                 .padding(8.dp)
                 .background(
@@ -237,13 +175,94 @@ fun FilterScreen(
                 fontSize = 20.sp
             )
         }
+    }
+}
 
+@Composable
+fun FilterContent(
+    imageList: List<ImageBitmap>,
+    filter: ColorFilter?,
+    frame: Painter,
+    selectedIndex: Int
+) {
+    Box {
+        when {
+            selectedIndex <= 7 -> {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(bottom = 5.dp)
+                ) {
+                    Column {
+                        Spacer(Modifier.height(86.dp))
+                        FilteredImage(bitmap = imageList[0], filter = filter)
+                        Spacer(Modifier.height(10.dp))
+                        FilteredImage(bitmap = imageList[1], filter = filter)
+                    }
+                    Spacer(Modifier.width(2.dp))
+                    Column {
+                        Spacer(Modifier.height(6.dp))
+                        FilteredImage(bitmap = imageList[2], filter = filter)
+                        Spacer(Modifier.height(4.dp))
+                        FilteredImage(bitmap = imageList[3], filter = filter)
+                    }
+                }
+            }
+
+            selectedIndex <= 15 -> {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 8.dp)
+                        .padding(top = 10.dp)
+                ) {
+                    Column {
+                        FilteredImage(bitmap = imageList[0], filter = filter)
+                        Spacer(Modifier.height(8.dp))
+                        FilteredImage(bitmap = imageList[1], filter = filter)
+                    }
+                    Spacer(Modifier.width(2.dp))
+                    Column {
+                        FilteredImage(bitmap = imageList[2], filter = filter)
+                        Spacer(Modifier.height(8.dp))
+                        FilteredImage(bitmap = imageList[3], filter = filter)
+                    }
+                }
+            }
+
+            else -> {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(horizontal = 8.dp)
+                        .padding(top = 10.dp)
+                ) {
+                    Column {
+                        Spacer(Modifier.height(4.dp))
+                        FilteredImage(bitmap = imageList[0], filter = filter, isVertical = true)
+                        Spacer(Modifier.height(12.dp))
+                        FilteredImage(bitmap = imageList[1], filter = filter, isVertical = true)
+                        Spacer(Modifier.height(12.dp))
+                        FilteredImage(bitmap = imageList[2], filter = filter, isVertical = true)
+                    }
+                }
+            }
+        }
+
+        Image(
+            painter = frame,
+            contentDescription = null,
+            modifier = Modifier
+                .width(250.dp)
+                .height(402.28.dp)
+                .align(alignment = Alignment.TopCenter)
+        )
     }
 }
 
 @Composable
 fun FilteredImage(
-    bitmap: androidx.compose.ui.graphics.ImageBitmap,
+    bitmap: ImageBitmap,
     filter: ColorFilter?,
     isVertical: Boolean = false
 ) {
@@ -256,7 +275,6 @@ fun FilteredImage(
         colorFilter = filter
     )
 }
-
 
 @Composable
 fun FilterButton(text: String, color: Color, selected: Boolean, onClick: () -> Unit) {
@@ -283,37 +301,22 @@ fun FilterButton(text: String, color: Color, selected: Boolean, onClick: () -> U
     }
 }
 
-fun captureAndCropFilterScreen(view: View, context: Context, isVertical: Boolean): Bitmap {
-    val screenshot = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(screenshot)
+fun captureView(view: View): Bitmap {
+    val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
     view.draw(canvas)
-
-    val density = context.resources.displayMetrics.density
-    val cropWidthPx = ((if (isVertical) 164 else 248) * density).toInt()
-    val cropHeightPx = (400 * density).toInt()
-
-    val centerX = screenshot.width / 2
-    val startX = (centerX - cropWidthPx / 2).coerceAtLeast(0)
-
-    val additionalOffsetDp = 102
-    val startY = ((20 + additionalOffsetDp) * density).toInt()
-
-    val finalWidth = minOf(cropWidthPx, screenshot.width - startX)
-    val finalHeight = minOf(cropHeightPx, screenshot.height - startY)
-
-    return Bitmap.createBitmap(screenshot, startX, startY, finalWidth, finalHeight)
+    return bitmap
 }
-
 
 enum class FilterType {
     ORIGINAL, GRAYSCALE, BRIGHTNESS
 }
 
 fun saveBitmapToGallery(context: Context, bitmap: Bitmap, albumName: String = "snapShot") {
-    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+    val filename = "IMG_${System.currentTimeMillis()}.png"
     val contentValues = ContentValues().apply {
         put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.MIME_TYPE, "image/png")
         put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$albumName")
         put(MediaStore.Images.Media.IS_PENDING, 1)
     }
@@ -324,7 +327,7 @@ fun saveBitmapToGallery(context: Context, bitmap: Bitmap, albumName: String = "s
     uri?.let {
         contentResolver.openOutputStream(uri).use { outputStream ->
             if (outputStream != null) {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
             }
         }
 

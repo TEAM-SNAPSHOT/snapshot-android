@@ -12,11 +12,11 @@ fun NavController.navigateToAlbum() {
 }
 
 fun NavGraphBuilder.albumScreen(
-    navigateToPhoto: () -> Unit,
+    navigateToChooseFrame: () -> Unit,
 ) {
     composable(
         route = ALBUM_ROUTE,
     ) {
-        AlbumScreen(navigateToPhoto = navigateToPhoto,)
+        AlbumScreen(navigateToChooseFrame = navigateToChooseFrame,)
     }
 }
