@@ -167,12 +167,12 @@ fun BottomNavigationBar(
                     onClick = {
                         if (currentRoute != CHOOSE_FRAME_ROUTE) {
                             navController.navigate(CHOOSE_FRAME_ROUTE) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                                popUpTo(CHOOSE_FRAME_ROUTE) {
+                                    inclusive = true
                                 }
                                 launchSingleTop = true
-                                restoreState = true
                             }
+
                         }
                     }
                 )

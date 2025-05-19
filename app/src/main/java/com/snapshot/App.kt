@@ -77,7 +77,7 @@ fun App(navHostController: NavHostController = rememberNavController()) {
             .distinctUntilChanged()
             .collect {
                 currentRoute = it
-                showBottomNav = currentRoute !in listOf("photo")
+                showBottomNav = currentRoute !in listOf("photo", "filter")
             }
     }
 
@@ -114,8 +114,11 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                         navigateToHome = navHostController::navigateToAlbum
                     )
                     settingScreen()
-                    albumScreen(navigateToPhoto = navHostController::navigateToPhoto)
-                    chooseFrameScreen(navigateToPhoto = navHostController::navigateToPhoto)
+                    albumScreen()
+                    chooseFrameScreen(
+                        navigateToPhoto = navHostController::navigateToPhoto,
+                        viewModel = photoViewModel
+                    )
                     photoScreen(
                         navigateToChoosePhoto = navHostController::navigateToChoosePhoto,
                         navigateToAlbum = navHostController::navigateToAlbum,
@@ -126,7 +129,10 @@ fun App(navHostController: NavHostController = rememberNavController()) {
                         navigateToFilter = navHostController::navigateToFilter,
                         navigateToPhoto = navHostController::navigateToPhoto
                     )
-                    filterScreen()
+                    filterScreen(
+                        viewModel = photoViewModel,
+                        navigateToAlbum = navHostController::navigateToAlbum,
+                    )
                 }
             }
         }

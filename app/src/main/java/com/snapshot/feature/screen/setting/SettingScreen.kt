@@ -34,7 +34,7 @@ fun SettingScreen(
 ) {
     val context = LocalContext.current
 
-    var shotTime by remember { mutableStateOf("8") }
+    var shotTime by remember { mutableStateOf("0") }
     var albumName by remember { mutableStateOf("스냅샷") }
     LaunchedEffect(Unit) {
         shotTime = getShotTime(context)
