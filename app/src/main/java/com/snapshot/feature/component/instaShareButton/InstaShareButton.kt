@@ -48,10 +48,26 @@ import androidx.compose.ui.unit.sp
 import com.snapshot.R
 
 @Composable
-fun InstaShareButton(uri : Uri, context: Context) {
+fun InstaShareButton(image : Bitmap, context: Context) {
+    // Bitmap → Uri 변환
+    fun bitmapToUri(bitmap: Bitmap): Uri {
+        val file = File(context.getExternalFilesDir(null), "selected_image.jpg")
+        val outputStream = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        outputStream.flush()
+        outputStream.close()
+
+        val imageUri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        return imageUri
+    }
+
     val backgroundUri = createWhiteBackgroundUri(context)
     val file = File(context.getExternalFilesDir(null), "shared_image.jpg")
-    val inputStream = context.contentResolver.openInputStream(uri)
+    val inputStream = context.contentResolver.openInputStream(bitmapToUri(image))
     val outputStream = file.outputStream()
     inputStream?.copyTo(outputStream)
     inputStream?.close()
