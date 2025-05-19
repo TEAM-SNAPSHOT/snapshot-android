@@ -1,11 +1,15 @@
 import android.Manifest
+import android.app.Activity
+import android.app.RecoverableSecurityException
 import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -18,10 +22,14 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -80,6 +88,7 @@ fun AlbumScreen(
         hasPermission = isGranted
     }
 
+
     LaunchedEffect(Unit) {
         if (!hasPermission) {
             launcher.launch(permission)
@@ -125,14 +134,36 @@ fun AlbumScreen(
         return bitmaps
     }
 
+    fun loadPhotosFromAlbum(context: Context, albumName: String): List<Photo> {
+        val list = mutableListOf<Photo>()
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+        val selection = "${MediaStore.Images.Media.BUCKET_DISPLAY_NAME} = ?"
+        val selectionArgs = arrayOf(albumName)
+        val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
+
+        context.contentResolver.query(collection, projection, selection, selectionArgs, sortOrder)
+            ?.use { cursor ->
+                val idCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(idCol)
+                    val uri = ContentUris.withAppendedId(collection, id)
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)?.let { bmp ->
+                        list += Photo(uri, bmp)
+                    }
+                }
+            }
+        return list
+    }
+
     if (hasPermission) {
-        val images = remember { mutableStateListOf<Bitmap>() }
-        var selectedImage by remember { mutableStateOf<Bitmap?>(null) }
+        val images = remember { mutableStateListOf<Photo>() }
+        var selectedImage by remember { mutableStateOf<Photo?>(null) }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(Unit) {
-            val loadedBitmaps = loadBitmapsFromAlbum(context, albumName)
+            val loadedBitmaps = loadPhotosFromAlbum(context, albumName)
             images.clear()
             images.addAll(loadedBitmaps)
         }
@@ -145,15 +176,15 @@ fun AlbumScreen(
                         .padding(4.dp)
                 ) {
                     items(images.size) { index ->
-                        val bitmap = images[index]
+                        val photo = images[index]
                         Image(
-                            bitmap = bitmap.asImageBitmap(),
+                            bitmap = photo.bitmap.asImageBitmap(),
                             contentDescription = null,
                             modifier = Modifier
                                 .aspectRatio(1f)
                                 .padding(4.dp)
                                 .clickable {
-                                    selectedImage = bitmap
+                                    selectedImage = photo
                                     scope.launch {
                                         sheetState.show()
                                     }
@@ -162,19 +193,42 @@ fun AlbumScreen(
                     }
                 }
 
-                selectedImage?.let { bitmap ->
-                    // Bitmap → Uri 변환
-                    val file = File(context.getExternalFilesDir(null), "selected_image.jpg")
-                    val outputStream = FileOutputStream(file)
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                    outputStream.flush()
-                    outputStream.close()
+                selectedImage?.let { photo ->
 
-                    val imageUri = FileProvider.getUriForFile(
-                        context,
-                        "${context.packageName}.fileprovider",
-                        file
-                    )
+                    val deleteLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result ->
+                        if (result.resultCode == Activity.RESULT_OK && selectedImage != null) {
+                            // 승인 후 실제 삭제 진행
+                            val rowsDeleted = context.contentResolver.delete(selectedImage!!.uri, null, null)
+                            if (rowsDeleted > 0) {
+                                images.removeIf { it == selectedImage }
+                                selectedImage = null
+                                scope.launch { sheetState.hide() }
+                            }
+                        }
+                    }
+
+                    fun deleteImage(imageUri: Uri) {
+                        try {
+                            val rowsDeleted = context.contentResolver.delete(imageUri, null, null)
+                            if (rowsDeleted > 0) {
+                                images.removeIf { it == imageUri }
+                                selectedImage = null
+                                scope.launch { sheetState.hide() }
+                            }
+                        } catch (e: SecurityException) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                                e is RecoverableSecurityException
+                            ) {
+                                val intentSender = e.userAction.actionIntent.intentSender
+                                val request = IntentSenderRequest.Builder(intentSender).build()
+                                deleteLauncher.launch(request)
+                            } else {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
 
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -192,14 +246,29 @@ fun AlbumScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Image(
-                                bitmap = bitmap.asImageBitmap(),
+                                bitmap = photo.bitmap.asImageBitmap(),
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxHeight(0.8f)
                             )
                             InstaShareButton(
-                                uri = imageUri,
+                                image = photo.bitmap,
                                 context = context
                             )
+                            Button(
+                                onClick = {
+                                    deleteImage(selectedImage!!.uri)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = ColorTheme.colors.main,
+                                    contentColor = ColorTheme.colors.font
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .height(48.dp)
+                            ) {
+                                Text("삭제하기")
+                            }
                         }
                     }
                 }
@@ -225,3 +294,5 @@ fun AlbumScreen(
         }
     }
 }
+
+data class Photo(val uri: Uri, val bitmap: Bitmap)
